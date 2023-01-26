@@ -23,7 +23,7 @@ def get_acct_balance(public_key:str, as_erc20=False): # can fail!
     else:
         return contract.functions.balanceOf(web3.toChecksumAddress(public_key)).call()
 
-def send_erc20(from_address:str, to_address:str, private_key:bytes, amount:float, max_gas_gwei:float=250, gas_fee_gwei:float=3.0, chainid=5):
+def send_erc20(from_address:str, to_address:str, private_key:str, amount:float, max_gas_gwei:float=250, gas_fee_gwei:float=3.0, chainid=5):
     balance = get_acct_balance(from_address, False)
     wei_amount = int(amount * (10**token_decimal))
     max_gas_gwei = web3.toWei(max_gas_gwei, "gwei")
