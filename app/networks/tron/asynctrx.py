@@ -1,4 +1,5 @@
 from tronpy import AsyncTron
+from tronpy.exceptions import TransactionError
 from tronpy.keys import PrivateKey
 from .provider import async_provider, create_account
 
@@ -15,16 +16,16 @@ async def get_acct_balance(public_key:str, as_trx=False):
         else:
             return await web3.get_account_balance(public_key) * 10**token_decimal
 
-async def send_trx(from_address:str, to_address:str, private_key:str, amount:int):
+async def send_trx(from_address:str, to_address:str, private_key:str, amount:int, memo="sending trx tokens using async"):
     async with AsyncTron(provider=async_provider) as web3:
         amount *= (10**token_decimal)
         if not web3.is_address(to_address):
-            return 'invalid address!'
+            raise TransactionError('invalid trx address!')
         balance = await get_acct_balance(from_address, False)
         if balance < amount:
-            return "insufficient trx!"
+            raise TransactionError("insufficient trx!")
         private_key = PrivateKey(bytes.fromhex(private_key))
-        tx = await web3.trx.transfer(from_address, to_address, amount).memo("first transaction").build().inspect().sign(private_key).broadcast()
+        tx = await web3.trx.transfer(from_address, to_address, amount).memo(memo).build().inspect().sign(private_key).broadcast()
         return await tx.wait()
     
 

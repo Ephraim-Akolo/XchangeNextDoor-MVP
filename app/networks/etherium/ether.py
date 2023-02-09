@@ -1,4 +1,6 @@
+from tronpy.exceptions import TransactionError
 from .provider import web3, create_account
+
 
 def get_latest_block():
     return web3.eth.block_number
@@ -13,7 +15,7 @@ def send_ether(from_address:str, to_address:str, private_key:str, amount:float, 
     to_address = web3.toChecksumAddress(to_address)
     balance = get_acct_balance(from_address, False)
     if balance < (web3.toWei(amount, 'ether') + web3.toWei(max_gas_gwei, "gwei")):
-        return "insufficient ether!"
+        raise TransactionError("insufficient ether!")
     tx = {
         'type': "0x2",
         'nonce': web3.eth.get_transaction_count(from_address),
