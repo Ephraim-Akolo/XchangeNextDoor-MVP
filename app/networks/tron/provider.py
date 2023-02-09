@@ -1,4 +1,4 @@
-from tronpy import Tron
+from tronpy import Tron, AsyncTron
 from tronpy.providers import HTTPProvider, AsyncHTTPProvider
 from ...settings import settings
 
@@ -11,9 +11,11 @@ if web3.get_latest_block_number():
 else:
     raise Exception("Cannot connect to tron node provider!")
 
-async_provider = AsyncHTTPProvider(settings.trn_web3_provider_uri, api_key=settings.trn_provider_api_key)
-
 def create_account():
     r = web3.generate_address()
     print(dir(r))
     return r['base58check_address'], r['private_key']
+
+def tron_provider():
+    return AsyncTron(provider=AsyncHTTPProvider(settings.trn_web3_provider_uri, api_key=settings.trn_provider_api_key))
+        

@@ -1,29 +1,28 @@
-from tronpy import AsyncTron
 from tronpy.exceptions import TransactionError
 from tronpy.keys import PrivateKey
-from .provider import async_provider, create_account
+from .provider import tron_provider, create_account
 from ...settings import settings
 
 address = settings.trc20_contract_address
 
 async def get_total_supply():
-    async with AsyncTron(provider=async_provider) as web3:
+    async with tron_provider() as web3:
         contract = await web3.get_contract(address)
         token_decimal = await contract.functions.decimals()
         return await contract.functions.totalSupply()/(10**token_decimal)
 
 async def get_name():
-    async with AsyncTron(provider=async_provider) as web3:
+    async with tron_provider() as web3:
         contract = await web3.get_contract(address)
         return contract.functions.name()
 
 async def get_symbol():
-    async with AsyncTron(provider=async_provider) as web3:
+    async with tron_provider() as web3:
         contract = await web3.get_contract(address)
         return contract.functions.symbol()
 
 async def get_acct_balance(public_key:str, as_trc20=False):
-    async with AsyncTron(provider=async_provider) as web3:
+    async with tron_provider() as web3:
         contract = await web3.get_contract(address)
         token_decimal = await contract.functions.decimals()
         if as_trc20:
@@ -32,7 +31,7 @@ async def get_acct_balance(public_key:str, as_trc20=False):
             return await contract.functions.balanceOf(public_key)
 
 async def send_erc20(from_address:str, to_address:str, private_key:str, amount:float, fee_limit=5_000_000):
-    async with AsyncTron(provider=async_provider) as web3:
+    async with tron_provider() as web3:
         contract = await web3.get_contract(address)
         token_decimal = await contract.functions.decimals()
         amount *= (10**token_decimal)
