@@ -1,4 +1,4 @@
-from tronpy.exceptions import TransactionError
+from tronpy.exceptions import TransactionError, BadAddress
 from tronpy.keys import PrivateKey
 from .provider import tron_provider, create_account
 from ...settings import settings
@@ -36,7 +36,7 @@ async def send_erc20(from_address:str, to_address:str, private_key:str, amount:f
         token_decimal = await contract.functions.decimals()
         amount *= (10**token_decimal)
         if not web3.is_address(to_address):
-            raise TransactionError('invalid trc20 address!')
+            raise BadAddress('invalid trc20 address!')
         balance = await get_acct_balance(from_address, False)
         if balance < amount:
             raise TransactionError("insufficient trc20 tokens!")

@@ -1,4 +1,4 @@
-from tronpy.exceptions import TransactionError
+from tronpy.exceptions import TransactionError, BadAddress
 from tronpy.keys import PrivateKey
 from .provider import create_account, tron_provider
 
@@ -20,7 +20,7 @@ async def send_trx(from_address:str, to_address:str, private_key:str, amount:int
     async with tron_provider() as web3:
         amount *= (10**token_decimal)
         if not web3.is_address(to_address):
-            raise TransactionError('invalid trx address!')
+            raise BadAddress('invalid trx address!')
         balance = await get_acct_balance(from_address, False)
         if balance < amount:
             raise TransactionError("insufficient trx!")

@@ -1,7 +1,7 @@
 from .provider import web3, create_account
 from ...settings import settings
 from tronpy.keys import PrivateKey
-from tronpy.exceptions import TransactionError
+from tronpy.exceptions import TransactionError, BadAddress
 
 address = settings.trc20_contract_address
 contract = web3.get_contract(address)
@@ -17,7 +17,7 @@ def get_name():
 def get_symbol():
     return contract.functions.symbol()
 
-def get_acct_balance(public_key:str, as_trc20=False): # can fail!
+def get_acct_balance(public_key:str, as_trc20=False):
     if as_trc20:
         return contract.functions.balanceOf(public_key)/10**token_decimal
     else:
@@ -26,7 +26,7 @@ def get_acct_balance(public_key:str, as_trc20=False): # can fail!
 def send_erc20(from_address:str, to_address:str, private_key:str, amount:float, fee_limit=5_000_000):
     amount *= (10**token_decimal)
     if not web3.is_address(to_address):
-        raise TransactionError('invalid trc20 address!')
+        raise BadAddress('invalid trc20 address!')
     balance = get_acct_balance(from_address, False)
     if balance < amount:
         raise TransactionError("insufficient trc20 tokens!")
