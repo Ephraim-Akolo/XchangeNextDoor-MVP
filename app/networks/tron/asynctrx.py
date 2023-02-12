@@ -16,14 +16,15 @@ async def get_acct_balance(public_key:str, as_trx=False):
         else:
             return await web3.get_account_balance(public_key) * 10**token_decimal
 
-async def send_trx(from_address:str, to_address:str, private_key:str, amount:int, memo="sending trx tokens using async"):
+async def send_trx(from_address:str, to_address:str, private_key:str, amount:int, memo="sending trx tokens using async", verify_balance=False):
     async with tron_provider() as web3:
         amount *= (10**token_decimal)
         if not web3.is_address(to_address):
             raise BadAddress('invalid trx address!')
-        balance = await get_acct_balance(from_address, False)
-        if balance < amount:
-            raise TransactionError("insufficient trx!")
+        if verify_balance:
+            balance = await get_acct_balance(from_address, False)
+            if balance < amount:
+                raise TransactionError("insufficient trx!")
         private_key = PrivateKey(bytes.fromhex(private_key))
         tx = await web3.trx.transfer(from_address, to_address, amount).memo(memo).build().inspect().sign(private_key).broadcast()
         return await tx.wait()

@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     trn_web3_provider_uri:str = 'https://api.shasta.trongrid.io/'
     trn_provider_api_key:str = ''
     trc20_contract_address:str = ""
+    trn_jwt_token:str = ''
     xchangenextdoor_db_user:str = 'root'
     xchangenextdoor_db_password:str = 'akolo000'
     xchangenextdoor_db_server:str = 'localhost'

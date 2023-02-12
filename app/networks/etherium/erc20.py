@@ -24,14 +24,15 @@ def get_acct_balance(public_key:str, as_erc20=False): # can fail!
     else:
         return contract.functions.balanceOf(web3.toChecksumAddress(public_key)).call()
 
-def send_erc20(from_address:str, to_address:str, private_key:str, amount:float, max_gas_gwei:float=250, gas_fee_gwei:float=3.0, chainid=5):
+def send_erc20(from_address:str, to_address:str, private_key:str, amount:float, max_gas_gwei:float=250, gas_fee_gwei:float=3.0, chainid=5, verify_balance=False):
     to_address = web3.toChecksumAddress(to_address)
-    balance = get_acct_balance(from_address, False)
     wei_amount = int(amount * (10**token_decimal))
     max_gas_gwei = web3.toWei(max_gas_gwei, "gwei")
     gas_fee_gwei = web3.toWei(gas_fee_gwei, "gwei")
-    if balance < wei_amount:
-        raise TransactionError("insufficient erc20 token!")
+    if verify_balance:
+        balance = get_acct_balance(from_address, False)
+        if balance < wei_amount:
+            raise TransactionError("insufficient erc20 token!")
     if web3.eth.get_balance(from_address) < max_gas_gwei:
         raise TransactionError("insufficient ether to be used as gas fee!")
     nonce = web3.eth.get_transaction_count(from_address)

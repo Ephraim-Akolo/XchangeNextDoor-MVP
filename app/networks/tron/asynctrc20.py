@@ -30,16 +30,17 @@ async def get_acct_balance(public_key:str, as_trc20=False):
         else:
             return await contract.functions.balanceOf(public_key)
 
-async def send_erc20(from_address:str, to_address:str, private_key:str, amount:float, fee_limit=5_000_000):
+async def send_erc20(from_address:str, to_address:str, private_key:str, amount:float, fee_limit=5_000_000, verify_balance=False):
     async with tron_provider() as web3:
         contract = await web3.get_contract(address)
         token_decimal = await contract.functions.decimals()
         amount *= (10**token_decimal)
         if not web3.is_address(to_address):
             raise BadAddress('invalid trc20 address!')
-        balance = await get_acct_balance(from_address, False)
-        if balance < amount:
-            raise TransactionError("insufficient trc20 tokens!")
+        if verify_balance:
+            balance = await get_acct_balance(from_address, False)
+            if balance < amount:
+                raise TransactionError("insufficient trc20 tokens!")
         private_key = PrivateKey(bytes.fromhex(private_key))
         tx = await contract.functions.transfer(to_address, amount).with_owner(from_address).fee_limit(fee_limit).build().sign(private_key)
         return await tx.wait()

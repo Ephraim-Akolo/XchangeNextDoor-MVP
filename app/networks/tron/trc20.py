@@ -23,13 +23,14 @@ def get_acct_balance(public_key:str, as_trc20=False):
     else:
         return contract.functions.balanceOf(public_key)
 
-def send_erc20(from_address:str, to_address:str, private_key:str, amount:float, fee_limit=5_000_000):
+def send_erc20(from_address:str, to_address:str, private_key:str, amount:float, fee_limit=5_000_000, verify_balance=False):
     amount *= (10**token_decimal)
     if not web3.is_address(to_address):
         raise BadAddress('invalid trc20 address!')
-    balance = get_acct_balance(from_address, False)
-    if balance < amount:
-        raise TransactionError("insufficient trc20 tokens!")
+    if verify_balance:
+        balance = get_acct_balance(from_address, False)
+        if balance < amount:
+            raise TransactionError("insufficient trc20 tokens!")
     private_key = PrivateKey(bytes.fromhex(private_key))
     tx = contract.functions.transfer(to_address, amount).with_owner(from_address).fee_limit(fee_limit).build().sign(private_key)
     return tx.wait()

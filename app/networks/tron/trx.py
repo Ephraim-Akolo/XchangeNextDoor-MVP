@@ -13,13 +13,14 @@ def get_acct_balance(public_key:str, as_trx=False):
     else:
         return web3.get_account_balance(public_key) * 10**token_decimal
 
-def send_trx(from_address:str, to_address:str, private_key:str, amount:int, memo='sending trx tokens using sync method'):
+def send_trx(from_address:str, to_address:str, private_key:str, amount:int, memo='sending trx tokens using sync method', verify_balance=False):
     amount *= (10**token_decimal)
     if not web3.is_address(to_address):
         raise BadAddress('invalid trx address!')
-    balance = get_acct_balance(from_address, False)
-    if balance < amount:
-        raise TransactionError("insufficient trx!")
+    if verify_balance:
+        balance = get_acct_balance(from_address, False)
+        if balance < amount:
+            raise TransactionError("insufficient trx!")
     private_key = PrivateKey(bytes.fromhex(private_key))
     tx = web3.trx.transfer(from_address, to_address, amount).memo(memo).build().inspect().sign(private_key).broadcast()
     return tx.wait()
