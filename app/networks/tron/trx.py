@@ -13,7 +13,7 @@ def get_acct_balance(public_key:str, as_trx=False):
     else:
         return web3.get_account_balance(public_key) * 10**token_decimal
     
-def search_block_chain(block_number:int, to_block:int, to_address:str|list = None, from_address:str|list = None, strict=False):
+def search_block_chain(block_number:int, to_block:int, to_address:str|list = None, from_address:str|list = None, strict=False, as_trx=False):
     if strict and (to_address is None or from_address is None):
         raise Exception("Both to_address and from_address parameter must be provided when strict is True!")
     if to_address is not None:
@@ -54,11 +54,12 @@ def search_block_chain(block_number:int, to_block:int, to_address:str|list = Non
                     continue
             else:
                 return
+            _amount = trans['raw_data']['contract'][0]['parameter']['value']['amount']
             ret_dict = {
             'block_number': block_number,
             'ret': trans['ret'][0]['contractRet'],
             'timestamp': trans['raw_data']['timestamp'],
-            'amount': trans['raw_data']['contract'][0]['parameter']['value']['amount'],
+            'amount': _amount/(10**token_decimal) if as_trx else _amount,
             'owner_address': _from_address,
             'to_address': _to_address
             } 

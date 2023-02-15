@@ -31,8 +31,10 @@ async def get_acct_balance(public_key:str, as_trc20=False):
         else:
             return await contract.functions.balanceOf(public_key)
 
-async def search_block_chain(block_number:int, to_block:int, to_address:str|list = None, from_address:str|list = None, strict=False):
+async def search_block_chain(block_number:int, to_block:int, to_address:str|list = None, from_address:str|list = None, strict=False, as_trc20=False):
     async with tron_provider() as web3:
+        contract = await web3.get_contract(address)
+        token_decimal = await contract.functions.decimals()
         if strict and (to_address is None or from_address is None):
             raise Exception("Both to_address and from_address parameter must be provided when strict is True!")
         if to_address is not None:
@@ -46,7 +48,6 @@ async def search_block_chain(block_number:int, to_block:int, to_address:str|list
             else:
                 from_address = [web3.to_base58check_address(addr) for addr in from_address]
         ret = []
-        contract_address = settings.trc20_contract_address
         while True:
             try:
                 block = await web3.get_block(block_number)
@@ -57,7 +58,7 @@ async def search_block_chain(block_number:int, to_block:int, to_address:str|list
             for trans in block['transactions']:
                 _type = trans['raw_data']['contract'][0]['type']
                 if not (_type == "TriggerSmartContract" and 
-                        trans['raw_data']['contract'][0]['parameter']['value']['contract_address'] == contract_address):
+                        trans['raw_data']['contract'][0]['parameter']['value']['contract_address'] == address):
                     continue
                 _from_address = web3.to_base58check_address(trans['raw_data']['contract'][0]['parameter']['value']['owner_address'])
                 _to_address, _amount = trx_abi.decode(['address', 'uint256'], bytes.fromhex(trans['raw_data']['contract'][0]['parameter']['value']['data'][8:]))
@@ -79,7 +80,7 @@ async def search_block_chain(block_number:int, to_block:int, to_address:str|list
                 'block_number': block_number,
                 'ret': trans['ret'][0]['contractRet'],
                 'timestamp': trans['raw_data']['timestamp'],
-                'amount': _amount,
+                'amount': _amount/(10**token_decimal) if as_trc20 else _amount,
                 'owner_address': _from_address,
                 'to_address': _to_address
                 } 
