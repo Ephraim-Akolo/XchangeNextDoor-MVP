@@ -3,7 +3,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .networks.etherium import ether, erc20
 from .networks.tron import trx, trc20, asynctrx, asynctrc20
-from .routers import tests
+from .routers import tests, auth, users
+from .dbconnect import Base, engine
+
+Base.metadata.create_all(engine)
 
 app = FastAPI()
 
@@ -33,6 +36,9 @@ async def asyncindex():
     return {
         'latest trx block': await asynctrx.get_latest_block()
         }
+
+app.include_router(auth.router)
+app.include_router(users.router)
 
 app.include_router(tests.router)
 
