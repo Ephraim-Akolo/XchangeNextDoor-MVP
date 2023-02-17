@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     jwt_algorithm:str = 'HS256'
     jwt_secret_key: str = 'd329748e4dce05b3fcf429da2bb8914f240ff0c288897f455ae792f82aee3cc0'
     aes_secret_key:str
+    central_wallet_address:str
+    central_wallet_key:str
     class Config:
         env_file = "./.env"
 

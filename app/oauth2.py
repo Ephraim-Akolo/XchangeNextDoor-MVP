@@ -34,13 +34,15 @@ def verify_token(token:str):
     try:
         payload = jwt.decode(token, settings.jwt_secret_key, settings.jwt_algorithm)
         if payload['id'] is None:
-            HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Aunthenticate": "Bearer"})
+            return None
         return payload
     except JWTError:
-        HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Aunthenticate": "Bearer"})
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Aunthenticate": "Bearer"})
 
 def get_user_from_token(token = Depends(oauth2_scheme_users), db_session:Session = Depends(get_session)):
     payload =  verify_token(token)
+    if payload is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Aunthenticate": "Bearer"})
     user = db_session.query(database.Users).filter(database.Users.id == payload['id']).first()
     return schemas.UserComplete(id=user.id, email=user.email, password=user.password, public_key=user.public_key, private_key=user.private_key, balance=user.balance)
 

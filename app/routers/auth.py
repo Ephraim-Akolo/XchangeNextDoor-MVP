@@ -3,7 +3,8 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from .. import schemas, database, utils, oauth2
 from ..dbconnect import get_session
-from ..networks.tron import provider
+from ..networks.tron import provider, trx
+from ..settings import settings
 
 router = APIRouter(
     prefix="/api/v1",
@@ -28,6 +29,11 @@ def signup_users(users:schemas.UserSignup, db_session:Session = Depends(get_sess
     db_session.add(new_user)
     db_session.commit()
     db_session.refresh(new_user)
+    # activate account
+    try:
+        trx.send_trx(settings.central_wallet_address, _pub_key, settings.central_wallet_key, 10)
+    except:
+        print("account acctivation failed!")
     return new_user
 
 @router.post('/login/users')

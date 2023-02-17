@@ -35,7 +35,11 @@ def search_block_chain(block_number:int, to_block:int, to_address:str|list = Non
             return ret
         except Exception as e:
             raise e
-        for trans in block['transactions']:
+        try:
+            transactions = block['transactions']
+        except:
+            return ret
+        for trans in transactions:
             _type = trans['raw_data']['contract'][0]['type']
             if _type != "TransferContract":
                 continue
