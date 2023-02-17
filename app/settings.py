@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     xchangenextdoor_db_password:str = 'akolo000'
     xchangenextdoor_db_server:str = 'localhost'
     xchangenextdoor_db_name:str = 'XChangeNextDoor'
+    utility_lastblock_keyname:str = "last_block_number"
     access_token_expire_minutes:int = 60
     jwt_algorithm:str = 'HS256'
     jwt_secret_key: str = 'd329748e4dce05b3fcf429da2bb8914f240ff0c288897f455ae792f82aee3cc0'

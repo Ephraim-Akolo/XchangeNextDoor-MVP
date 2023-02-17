@@ -2,6 +2,7 @@ from .provider import web3, create_account
 from tronpy.keys import PrivateKey
 from tronpy.exceptions import TransactionError, BadAddress, BlockNotFound
 
+
 token_decimal = 6
 
 def get_latest_block():

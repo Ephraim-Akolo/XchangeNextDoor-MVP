@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from ..networks.etherium import ether, erc20
+# from ..networks.etherium import ether, erc20
 from ..networks.tron import trx, trc20, asynctrx, asynctrc20
 from ..schemas import Browser
 
@@ -8,13 +8,13 @@ router = APIRouter(
     tags= ["Test Endpoints"]
 )
 
-@router.get("/eth/{public_key}")
-def get_eth_balance(public_key:str):
-    return { "balance" : ether.get_acct_balance(public_key, True)}
+# @router.get("/eth/{public_key}")
+# def get_eth_balance(public_key:str):
+#     return { "balance" : ether.get_acct_balance(public_key, True)}
 
-@router.get("/erc20/{public_key}")
-def get_erc20_balance(public_key:str):
-    return { "balance" : erc20.get_acct_balance(public_key, True)}
+# @router.get("/erc20/{public_key}")
+# def get_erc20_balance(public_key:str):
+#     return { "balance" : erc20.get_acct_balance(public_key, True)}
 
 @router.get("/trx/{public_key}")
 def get_trx_balance(public_key:str):
@@ -32,21 +32,21 @@ def get_trc20_balance(public_key:str):
 async def asyncget_trc20_balance(public_key:str):
     return { "balance" : await asynctrc20.get_acct_balance(public_key, True)}
 
-@router.post("/create/eth")
-def create_eth_account():
-    return { "created" : ether.create_account()}
+# @router.post("/create/eth")
+# def create_eth_account():
+#     return { "created" : ether.create_account()}
 
 @router.post("/create/trx")
 def create_trx_account():
     return { "created" : trx.create_account()}
 
-@router.post("/eth/send")
-def send_eth(from_address:str, to_address:str, private_key:str, amount:float):
-    return {"transaction hash": ether.send_ether(from_address, to_address, private_key, amount)}
+# @router.post("/eth/send")
+# def send_eth(from_address:str, to_address:str, private_key:str, amount:float):
+#     return {"transaction hash": ether.send_ether(from_address, to_address, private_key, amount)}
 
-@router.post("/erc20/send")
-def send_erc20(from_address:str, to_address:str, private_key:str, amount:float):
-    return {"transaction hash": erc20.send_erc20(from_address, to_address, private_key, amount)}
+# @router.post("/erc20/send")
+# def send_erc20(from_address:str, to_address:str, private_key:str, amount:float):
+#     return {"transaction hash": erc20.send_erc20(from_address, to_address, private_key, amount)}
 
 @router.post("/trx/send")
 def send_trx(from_address:str, to_address:str, private_key:str, amount:int):

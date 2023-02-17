@@ -1,5 +1,5 @@
 from .dbconnect import Base
-from sqlalchemy import Column, Integer, String, Float, Boolean
+from sqlalchemy import Column, Integer, String, Float, Boolean, TIMESTAMP
 
 SHORT_STR = 20
 
@@ -25,7 +25,11 @@ class Fundings(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     from_address = Column(String(LONG_STR), nullable= False, unique=False)
     to_address = Column(String(LONG_STR), nullable= False, unique=False)
+    amount = Column(Float, nullable=False)
+    block_number = Column(Integer, nullable=False)
+    status = Column(String(SHORT_STR), nullable=False)
     success = Column(Boolean, default=False)
+    timestamp = Column(TIMESTAMP)
 
 
 class Utility(Base):
