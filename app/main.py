@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 # from .networks.etherium import ether, erc20
 import logging
-from .networks.tron import trx#, trc20, asynctrx, asynctrc20
+from .networks.tron import trx, trc20, asynctrx, asynctrc20
 from .routers import tests, auth, users, backend
 from .dbconnect import Base, engine, get_session
 from . import database
@@ -85,14 +85,14 @@ def blockchain_browser():
         db_session.commit()
     except Exception as e:
         db_session.rollback()
-        logger.error(e)
-    del db_session
+        logger.error(['blockchain_browser logger', e])
+    db_session = None
 
 @app.on_event('startup')
 @repeat_every(seconds=30)
 def redirect_token():
+    db_session = next(get_session())
     try:
-        db_session = next(get_session())
         print("UPDATING DATABASE FROM THE BLOCKCHAIN")  
         pending_transactions = db_session.query(database.Fundings).filter(database.Fundings.success == 0).filter(database.Fundings.status == "SUCCESS").all()
         if pending_transactions is not None:
@@ -100,8 +100,8 @@ def redirect_token():
         del db_session
     except Exception as e:
         db_session.rollback()
-        logger.error(e)
-    del db_session
+        logger.error(['redirect_token logger', e])
+    db_session = None
 
         
 

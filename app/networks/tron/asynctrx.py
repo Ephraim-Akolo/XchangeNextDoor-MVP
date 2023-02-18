@@ -1,4 +1,4 @@
-from tronpy.exceptions import TransactionError, BadAddress, BlockNotFound
+from tronpy.exceptions import TransactionError, BadAddress, BlockNotFound, AddressNotFound
 from tronpy.keys import PrivateKey
 from .provider import create_account, tron_provider
 
@@ -11,10 +11,13 @@ async def get_latest_block():
 
 async def get_acct_balance(public_key:str, as_trx=False):
     async with tron_provider() as web3:
-        if as_trx:
-            return await web3.get_account_balance(public_key)
-        else:
-            return await web3.get_account_balance(public_key) * 10**token_decimal
+        try:
+            if as_trx:
+                return await web3.get_account_balance(public_key)
+            else:
+                return await web3.get_account_balance(public_key) * 10**token_decimal
+        except AddressNotFound as e:
+            return "Address Not Found On Chain!"
 
 async def search_block_chain(block_number:int, to_block:int, to_address:str|list = None, from_address:str|list = None, strict=False, as_trx=False):
     async with tron_provider() as web3:
@@ -38,7 +41,11 @@ async def search_block_chain(block_number:int, to_block:int, to_address:str|list
                 return ret
             except Exception as e:
                 raise e
-            for trans in block['transactions']:
+            try:
+                transactions = block['transactions']
+            except:
+                return ret
+            for trans in transactions:
                 _type = trans['raw_data']['contract'][0]['type']
                 if _type != "TransferContract":
                     continue
@@ -82,7 +89,7 @@ async def send_trx(from_address:str, to_address:str, private_key:str, amount:int
             if balance < amount:
                 raise TransactionError("insufficient trx!")
         private_key = PrivateKey(bytes.fromhex(private_key))
-        tx = await web3.trx.transfer(from_address, to_address, amount).memo(memo).build().inspect().sign(private_key).broadcast()
+        tx = await web3.trx.transfer(from_address, to_address, int(amount)).memo(memo).build().inspect().sign(private_key).broadcast()
         return await tx.wait()
     
 

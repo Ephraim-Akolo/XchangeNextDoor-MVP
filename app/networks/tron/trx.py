@@ -1,6 +1,6 @@
 from .provider import web3, create_account
 from tronpy.keys import PrivateKey
-from tronpy.exceptions import TransactionError, BadAddress, BlockNotFound
+from tronpy.exceptions import TransactionError, BadAddress, BlockNotFound, AddressNotFound
 
 
 token_decimal = 6
@@ -9,10 +9,13 @@ def get_latest_block():
     return web3.get_latest_block_number()
 
 def get_acct_balance(public_key:str, as_trx=False):
-    if as_trx:
-        return web3.get_account_balance(public_key)
-    else:
-        return web3.get_account_balance(public_key) * 10**token_decimal
+    try:
+        if as_trx:
+            return web3.get_account_balance(public_key)
+        else:
+            return web3.get_account_balance(public_key) * 10**token_decimal
+    except AddressNotFound as e:
+        return "Address Not Found On Chain!"
     
 def search_block_chain(block_number:int, to_block:int, to_address:str|list = None, from_address:str|list = None, strict=False, as_trx=False):
     if strict and (to_address is None or from_address is None):

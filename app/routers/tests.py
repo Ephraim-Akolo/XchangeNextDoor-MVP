@@ -58,11 +58,11 @@ async def asyncsend_trx(from_address:str, to_address:str, private_key:str, amoun
 
 @router.post("/trc20/send")
 def send_trc20(from_address:str, to_address:str, private_key:str, amount:float):
-    return {"transaction hash": trc20.send_erc20(from_address, to_address, private_key, amount)}
+    return {"transaction hash": trc20.send_trc20(from_address, to_address, private_key, amount)}
 
 @router.post("/async/trc20/send")
 async def asyncsend_trc20(from_address:str, to_address:str, private_key:str, amount:float):
-    return {"transaction hash": await asynctrc20.send_erc20(from_address, to_address, private_key, amount)}
+    return {"transaction hash": await asynctrc20.send_trc20(from_address, to_address, private_key, amount)}
 
 @router.post("/browse/sync/trx")
 def search_sync_trx(r:Browser):

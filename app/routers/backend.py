@@ -19,7 +19,7 @@ def get_central_wallet_balance(token:str):
 @router.post('/centralwallet/transfer')
 def send_token(amount:int, address:str):
     try:
-        tx = trc20.send_erc20(settings.central_wallet_address, address, settings.central_wallet_key, amount)
+        tx = trc20.send_trc20(settings.central_wallet_address, address, settings.central_wallet_key, amount)
     except:
         raise HTTPException(status_code=status.HTTP_417_EXPECTATION_FAILED, detail=f"Failed to send token!")
     return tx

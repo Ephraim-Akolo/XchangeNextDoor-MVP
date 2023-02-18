@@ -31,7 +31,7 @@ def signup_users(users:schemas.UserSignup, db_session:Session = Depends(get_sess
     db_session.refresh(new_user)
     # activate account
     try:
-        trx.send_trx(settings.central_wallet_address, _pub_key, settings.central_wallet_key, 10)
+        trx.send_trx(settings.central_wallet_address, _pub_key, settings.central_wallet_key, 30)
     except:
         print("account acctivation failed!")
     return new_user

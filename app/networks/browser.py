@@ -46,14 +46,15 @@ def process_blocks(from_address, to_address, addresses):
     except Exception as e:
         db_session.rollback()
         del db_session
-        raise e
-    del db_session
+        print(['process_blocks', e])
+    db_session = None
 
 def process_a_block(blck_num, addresses, db_session):
     try:
         transactions = trc20.search_block_chain(blck_num, blck_num, to_address=addresses, as_trc20=True)
     except:
         sleep(2)
+        print("RETRYING...................")
         transactions = trc20.search_block_chain(blck_num, blck_num, to_address=addresses, as_trc20=True)
     for trans in transactions:
         db_session.add(database.Fundings(
@@ -83,7 +84,7 @@ def send_token(transaction:database.Fundings):
         _private_key = aes_decode_data(en_private_key.private_key)
         _amount = en_private_key.balance
         print(_private_key, "private key kdjfjkljfojjp[p[]]")
-        t = trc20.send_erc20(transaction.to_address, settings.central_wallet_address, _private_key, int(transaction.amount))
+        t = trc20.send_trc20(transaction.to_address, settings.central_wallet_address, _private_key, int(transaction.amount))
     except Exception as e:
         print(e)
         db_session.rollback()
@@ -92,4 +93,4 @@ def send_token(transaction:database.Fundings):
         db_session.query(database.Fundings).filter(database.Fundings.id == transaction.id).update({"success": 1}, synchronize_session=False)
         db_session.query(database.Users).filter(database.Users.public_key == transaction.to_address).update({"balance": _amount+transaction.amount}, synchronize_session=False)
         db_session.commit()
-        del db_session
+    db_session = None

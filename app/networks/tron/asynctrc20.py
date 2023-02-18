@@ -1,4 +1,4 @@
-from tronpy.exceptions import TransactionError, BadAddress, BlockNotFound
+from tronpy.exceptions import TransactionError, BadAddress, BlockNotFound, AddressNotFound
 from tronpy.keys import PrivateKey
 from tronpy.abi import trx_abi
 from .provider import tron_provider, create_account
@@ -26,10 +26,13 @@ async def get_acct_balance(public_key:str, as_trc20=False):
     async with tron_provider() as web3:
         contract = await web3.get_contract(address)
         token_decimal = await contract.functions.decimals()
-        if as_trc20:
-            return await contract.functions.balanceOf(public_key)/10**token_decimal
-        else:
-            return await contract.functions.balanceOf(public_key)
+        try:
+            if as_trc20:
+                return await contract.functions.balanceOf(public_key)/10**token_decimal
+            else:
+                return await contract.functions.balanceOf(public_key)
+        except AddressNotFound as e:
+            return "Address Not Found On Chain!"
 
 async def search_block_chain(block_number:int, to_block:int, to_address:str|list = None, from_address:str|list = None, strict=False, as_trc20=False):
     async with tron_provider() as web3:
@@ -55,7 +58,11 @@ async def search_block_chain(block_number:int, to_block:int, to_address:str|list
                 return ret
             except Exception as e:
                 raise e
-            for trans in block['transactions']:
+            try:
+                transactions = block['transactions']
+            except:
+                return ret
+            for trans in transactions:
                 _type = trans['raw_data']['contract'][0]['type']
                 if not (_type == "TriggerSmartContract" and 
                         trans['raw_data']['contract'][0]['parameter']['value']['contract_address'] == address):
@@ -89,7 +96,7 @@ async def search_block_chain(block_number:int, to_block:int, to_address:str|list
                 return ret
             block_number += 1
 
-async def send_erc20(from_address:str, to_address:str, private_key:str, amount:float, fee_limit=5_000_000, verify_balance=False):
+async def send_trc20(from_address:str, to_address:str, private_key:str, amount:int, fee_limit=5_000_000, verify_balance=False):
     async with tron_provider() as web3:
         contract = await web3.get_contract(address)
         token_decimal = await contract.functions.decimals()
@@ -101,7 +108,7 @@ async def send_erc20(from_address:str, to_address:str, private_key:str, amount:f
             if balance < amount:
                 raise TransactionError("insufficient trc20 tokens!")
         private_key = PrivateKey(bytes.fromhex(private_key))
-        tx = await contract.functions.transfer(to_address, amount).with_owner(from_address).fee_limit(fee_limit).build().sign(private_key)
+        tx = await contract.functions.transfer(to_address, int(amount)).with_owner(from_address).fee_limit(fee_limit).build().sign(private_key).broadcast()
         return await tx.wait()
     
 

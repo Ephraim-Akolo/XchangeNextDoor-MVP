@@ -1,7 +1,7 @@
 from .provider import web3, create_account
 from ...settings import settings
 from tronpy.keys import PrivateKey
-from tronpy.exceptions import TransactionError, BadAddress, BlockNotFound
+from tronpy.exceptions import TransactionError, BadAddress, BlockNotFound, AddressNotFound
 from tronpy.abi import trx_abi
 
 address = settings.trc20_contract_address
@@ -19,10 +19,13 @@ def get_symbol():
     return contract.functions.symbol()
 
 def get_acct_balance(public_key:str, as_trc20=False):
-    if as_trc20:
-        return contract.functions.balanceOf(public_key)/10**token_decimal
-    else:
-        return contract.functions.balanceOf(public_key)
+    try:
+        if as_trc20:
+            return contract.functions.balanceOf(public_key)/10**token_decimal
+        else:
+            return contract.functions.balanceOf(public_key)
+    except AddressNotFound as e:
+        return "Address Not Found On Chain!"
 
 def search_block_chain(block_number:int, to_block:int, to_address:str|list = None, from_address:str|list = None, strict=False, as_trc20=False):
     if strict and (to_address is None or from_address is None):
@@ -46,7 +49,11 @@ def search_block_chain(block_number:int, to_block:int, to_address:str|list = Non
             return ret
         except Exception as e:
             raise e
-        for trans in block['transactions']:
+        try:
+            transactions = block['transactions']
+        except:
+            return ret
+        for trans in transactions:
             _type = trans['raw_data']['contract'][0]['type']
             if not (_type == "TriggerSmartContract" and 
                     trans['raw_data']['contract'][0]['parameter']['value']['contract_address'] == contract_address):
@@ -80,7 +87,7 @@ def search_block_chain(block_number:int, to_block:int, to_address:str|list = Non
             return ret
         block_number += 1
 
-def send_erc20(from_address:str, to_address:str, private_key:str, amount:float, fee_limit=5_000_000, verify_balance=False):
+def send_trc20(from_address:str, to_address:str, private_key:str, amount:int, fee_limit=40_000_000, verify_balance=False):
     amount *= (10**token_decimal)
     if not web3.is_address(to_address):
         raise BadAddress('invalid trc20 address!')
@@ -89,7 +96,7 @@ def send_erc20(from_address:str, to_address:str, private_key:str, amount:float, 
         if balance < amount:
             raise TransactionError("insufficient trc20 tokens!")
     private_key = PrivateKey(bytes.fromhex(private_key))
-    tx = contract.functions.transfer(to_address, amount).with_owner(from_address).fee_limit(fee_limit).build().sign(private_key)
-    return tx.wait()
+    tx = contract.functions.transfer(to_address, int(amount)).with_owner(from_address).fee_limit(fee_limit).build().sign(private_key)
+    return tx.broadcast().wait()
     
 
