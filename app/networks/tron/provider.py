@@ -8,10 +8,11 @@ _provider = HTTPProvider(settings.trn_web3_provider_uri, api_key=settings.trn_pr
 
 web3 = Tron(provider=_provider)
 
-if web3.get_latest_block_number():
-    print("connected to the tron network successfully!")
-else:
-    raise Exception("Cannot connect to tron node provider!")
+def test_network():
+    if web3.get_latest_block_number():
+        print("connected to the tron network successfully!")
+    else:
+        raise Exception("Cannot connect to tron node provider!")
 
 def create_account():
     r = web3.generate_address()

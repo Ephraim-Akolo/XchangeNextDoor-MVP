@@ -2,7 +2,7 @@ from threading import Thread
 from time import sleep
 from datetime import datetime
 from .. import database
-from .tron import trc20
+from ..networks.tron import trc20
 from ..dbconnect import get_session
 from ..settings import settings
 from ..oauth2 import aes_decode_data

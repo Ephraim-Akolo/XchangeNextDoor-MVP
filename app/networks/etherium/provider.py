@@ -9,10 +9,11 @@ else:
 
 web3 = Web3(_provider)
 
-if web3.isConnected():
-    print("connected to the etherium network successfully!")
-else:
-    raise Exception("Cannot connect to etherium node provider!")
+def test_network():
+    if web3.isConnected():
+        print("connected to the etherium network successfully!")
+    else:
+        raise Exception("Cannot connect to etherium node provider!")
 
 def create_account(random_string:str="wHATS UP"):
     r = web3.eth.account.create(random_string)
