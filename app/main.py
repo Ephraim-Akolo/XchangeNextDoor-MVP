@@ -49,8 +49,8 @@ from fastapi_utils.tasks import repeat_every
 from .networks.browser import process_blocks, send_transactions2backend
 
 
-@app.on_event('startup')
-@repeat_every(seconds= 15)
+# @app.on_event('startup')
+# @repeat_every(seconds= 15)
 def blockchain_browser():
     try:
         db_session = next(get_session())
@@ -88,8 +88,8 @@ def blockchain_browser():
         logger.error(['blockchain_browser logger', e])
     db_session = None
 
-@app.on_event('startup')
-@repeat_every(seconds=30)
+# @app.on_event('startup')
+# @repeat_every(seconds=30)
 def redirect_token():
     db_session = next(get_session())
     try:

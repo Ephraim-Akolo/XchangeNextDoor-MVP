@@ -38,7 +38,23 @@ async def asyncget_trc20_balance(public_key:str):
 
 @router.post("/create/trx")
 def create_trx_account():
-    return { "created" : trx.create_account()}
+    account = trx.create_account()
+    return { "address" : account[0], "key": account[1]}
+@router.post("/create/hdtrx")
+def create_trx_HD_account(passphrase:str='', num_of_words:int=12):
+    try:
+        account = trx.create_HD_account(passphrase=passphrase, num_of_words=num_of_words)
+        return { "address" : account[0], "key": account[1], "mnemonic words": account[2]}
+    except Exception as e:
+        return {'error': e}
+
+@router.get("/create/hdtrx")
+def get_trx_HD_account(mnemonic:str="", passphrase:str='', account_number:int=0, account_index:int=0):
+    try:
+        account = trx.get_HD_account(mnemonic=mnemonic, passphrase=passphrase, account_number=account_number, account_index=account_index)
+        return { "address" : account[0], "key": account[1]}
+    except Exception as e:
+        return {'error': e}
 
 # @router.post("/eth/send")
 # def send_eth(from_address:str, to_address:str, private_key:str, amount:float):

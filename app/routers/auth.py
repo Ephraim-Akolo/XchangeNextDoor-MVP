@@ -29,7 +29,7 @@ def signup_users(users:schemas.UserSignup, db_session:Session = Depends(get_sess
     db_session.add(new_user)
     db_session.commit()
     db_session.refresh(new_user)
-    # activate account
+    # activate account ######## work on the flow more properly later
     try:
         trx.send_trx(settings.central_wallet_address, _pub_key, settings.central_wallet_key, 30)
     except:

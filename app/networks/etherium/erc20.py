@@ -1,5 +1,5 @@
 import json
-from tronpy.exceptions import TransactionError
+from web3.exceptions import ValidationError
 from .provider import web3, create_account
 from ...settings import settings
 
@@ -32,9 +32,9 @@ def send_erc20(from_address:str, to_address:str, private_key:str, amount:float, 
     if verify_balance:
         balance = get_acct_balance(from_address, False)
         if balance < wei_amount:
-            raise TransactionError("insufficient erc20 token!")
+            raise ValidationError("insufficient erc20 token!")
     if web3.eth.get_balance(from_address) < max_gas_gwei:
-        raise TransactionError("insufficient ether to be used as gas fee!")
+        raise ValidationError("insufficient ether to be used as gas fee!")
     nonce = web3.eth.get_transaction_count(from_address)
     tx = {
         'type': "0x2",

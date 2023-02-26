@@ -1,4 +1,4 @@
-from .provider import web3, create_account
+from .provider import web3, create_account, create_HD_account, get_HD_account
 from tronpy.keys import PrivateKey
 from tronpy.exceptions import TransactionError, BadAddress, BlockNotFound, AddressNotFound
 
