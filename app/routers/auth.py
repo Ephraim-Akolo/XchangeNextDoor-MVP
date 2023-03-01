@@ -22,18 +22,20 @@ def signup_users(users:schemas.UserSignup, db_session:Session = Depends(get_sess
     users.password = utils.hash_password(users.password)
     d_users = users.dict()
     d_users.pop('confirm_password')
-    _pub_key, _priv_key = provider.create_account()
-    d_users['private_key'] = oauth2.aes_encode_data(_priv_key)
-    d_users['public_key'] = _pub_key
     new_user = database.Users(**d_users)
     db_session.add(new_user)
     db_session.commit()
     db_session.refresh(new_user)
+    _pub_key, _ = provider.get_HD_account(settings.xchangenextdoor_mnemonic, settings.xchangenextdoor_passphrase, new_user.id-1)
+    # d_users['private_key'] = oauth2.aes_encode_data(_priv_key)
+    db_session.query(database.Users).filter(database.Users.id == new_user.id).update({"public_key": _pub_key}, synchronize_session=False)
+    db_session.commit()
     # activate account ######## work on the flow more properly later
     try:
-        trx.send_trx(settings.central_wallet_address, _pub_key, settings.central_wallet_key, 30)
+        # trx.send_trx(settings.central_wallet_address, _pub_key, settings.central_wallet_key, 30)
+        trx.send_trx(settings.central_wallet_address, _pub_key, settings.central_wallet_key, 1, memo="")
     except:
-        print("account acctivation failed!")
+        print("account activation failed!")
     return new_user
 
 @router.post('/login/users')

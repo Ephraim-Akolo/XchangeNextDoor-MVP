@@ -15,8 +15,8 @@ class Users(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     email = Column(String(LONG_STR), unique=True, nullable=False)
     password = Column(String(LONG_STR), nullable=False)
-    public_key = Column(String(LONG_STR), nullable= False, unique=True)
-    private_key = Column(String(LONGER_STR), nullable= False)
+    public_key = Column(String(LONG_STR), nullable= True, unique=True)
+    address_index = Column(Integer, nullable=False, default=0)
     balance = Column(Float, nullable=False, default=0)
 
 

@@ -21,15 +21,14 @@ app.add_middleware(
     allow_headers = ["*"]
 )
 
-@app.get("/")
-def index():
-    return {"status": "running!"}
-
-
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(backend.router)
 app.include_router(tests.router)
+
+@app.get("/")
+def index():
+    return {"status": "running!"}
 
 
 if __name__ == "__main__":

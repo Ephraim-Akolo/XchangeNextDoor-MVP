@@ -1,9 +1,9 @@
 from .provider import web3, create_account, create_HD_account, get_HD_account
 from tronpy.keys import PrivateKey
-from tronpy.exceptions import TransactionError, BadAddress, BlockNotFound, AddressNotFound
+from tronpy.exceptions import BadAddress, BlockNotFound, AddressNotFound
 
 
-token_decimal = 6
+token_decimal = 6 
 
 def get_latest_block():
     return web3.get_latest_block_number()
@@ -76,19 +76,12 @@ def search_block_chain(block_number:int, to_block:int, to_address:str|list = Non
             return ret
         block_number += 1
 
-
-def send_trx(from_address:str, to_address:str, private_key:str, amount:int, memo='sending trx tokens using sync method', verify_balance=False):
+def send_trx(from_address:str, to_address:str, private_key:str, amount:float, memo=''):
     amount *= (10**token_decimal)
     if not web3.is_address(to_address):
         raise BadAddress('invalid trx address!')
-    if verify_balance:
-        balance = get_acct_balance(from_address, False)
-        if balance < amount:
-            raise TransactionError("insufficient trx!")
     private_key = PrivateKey(bytes.fromhex(private_key))
-    tx = web3.trx.transfer(from_address, to_address, amount).memo(memo).build().inspect().sign(private_key).broadcast()
+    tx = web3.trx.transfer(from_address, to_address, int(amount)).memo(memo).build().inspect().sign(private_key)
+    tx.broadcast()
     return tx.wait()
 
-
-
-    

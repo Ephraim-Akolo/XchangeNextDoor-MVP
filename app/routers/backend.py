@@ -17,7 +17,7 @@ def get_central_wallet_balance(token:str):
         return {"trx balance": trc20.get_acct_balance(settings.central_wallet_address, as_trc20=True)}
 
 @router.post('/centralwallet/transfer')
-def send_token(token:str, amount:int, address:str):
+def send_token(token:str, amount:float, address:str):
     try:
         tx = None
         if token.lower() == 'trx':

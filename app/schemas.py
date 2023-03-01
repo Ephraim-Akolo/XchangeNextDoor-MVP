@@ -17,8 +17,9 @@ class UserSignup(BaseModel):
 
 
 class UserResponse(BaseModel):
+    id:int
     email: EmailStr
-    password: str
+    # password: str
     class Config:
         orm_mode = True
 
@@ -37,7 +38,8 @@ class UserComplete(BaseModel):
     email: EmailStr
     password: str
     public_key: str
-    private_key:str
+    address_index:int
     password: str
     balance: float
+    
 

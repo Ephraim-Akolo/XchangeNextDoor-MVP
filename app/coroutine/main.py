@@ -5,7 +5,7 @@ from ..dbconnect import get_session
 from .. import database
 from ..settings import settings
 from ..networks.tron import trx
-from .browser import process_blocks, send_transactions2backend
+from .browser import process_blocks#, send_transactions2backend
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(asctime)s - %(message)s')
@@ -52,20 +52,20 @@ def blockchain_browser():
         logger.error(['blockchain_browser logger', e])
     db_session = None
 
-@app.on_event('startup')
-@repeat_every(seconds=30)
-def redirect_token():
-    db_session = next(get_session())
-    try:
-        print("UPDATING DATABASE FROM THE BLOCKCHAIN")  
-        pending_transactions = db_session.query(database.Fundings).filter(database.Fundings.success == 0).filter(database.Fundings.status == "SUCCESS").all()
-        if pending_transactions is not None:
-            send_transactions2backend(pending_transactions)
-        del db_session
-    except Exception as e:
-        db_session.rollback()
-        logger.error(['redirect_token logger', e])
-    db_session = None
+# @app.on_event('startup')
+# @repeat_every(seconds=30)
+# def redirect_token():
+#     db_session = next(get_session())
+#     try:
+#         print("UPDATING DATABASE FROM THE BLOCKCHAIN")  
+#         pending_transactions = db_session.query(database.Fundings).filter(database.Fundings.success == 0).filter(database.Fundings.status == "SUCCESS").all()
+#         if pending_transactions is not None:
+#             send_transactions2backend(pending_transactions)
+#         del db_session
+#     except Exception as e:
+#         db_session.rollback()
+#         logger.error(['redirect_token logger', e])
+#     db_session = None
 
 @app.get("/")
 def index():

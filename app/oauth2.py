@@ -44,5 +44,5 @@ def get_user_from_token(token = Depends(oauth2_scheme_users), db_session:Session
     if payload is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Aunthenticate": "Bearer"})
     user = db_session.query(database.Users).filter(database.Users.id == payload['id']).first()
-    return schemas.UserComplete(id=user.id, email=user.email, password=user.password, public_key=user.public_key, private_key=user.private_key, balance=user.balance)
+    return schemas.UserComplete(id=user.id, email=user.email, password=user.password, public_key=user.public_key, address_index = user.address_index, balance=user.balance)
 

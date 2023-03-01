@@ -1,11 +1,15 @@
 from threading import Thread
+from sqlalchemy.orm import Session
 from time import sleep
 from datetime import datetime
 from .. import database
 from ..networks.tron import trc20
 from ..dbconnect import get_session
-from ..settings import settings
-from ..oauth2 import aes_decode_data
+# from ..settings import settings
+# from ..oauth2 import aes_decode_data
+# from ..networks.tron import provider# from ..settings import settings
+# from ..oauth2 import aes_decode_data
+# from ..networks.tron import provider
 
 
 class CustomThread(Thread):
@@ -49,7 +53,7 @@ def process_blocks(from_address, to_address, addresses):
         print(['process_blocks', e])
     db_session = None
 
-def process_a_block(blck_num, addresses, db_session):
+def process_a_block(blck_num, addresses, db_session:Session):
     try:
         transactions = trc20.search_block_chain(blck_num, blck_num, to_address=addresses, as_trc20=True)
     except:
@@ -66,31 +70,38 @@ def process_a_block(blck_num, addresses, db_session):
             timestamp = datetime.fromtimestamp(trans['timestamp']/1000.0)
             ))
 
-def send_transactions2backend(transactions:list[database.Fundings]):
-    for t in transactions:
-        CustomThread(
-            name=f'send_transactions2backend: id {t.id}',
-            target= send_token,
-            args= (t,)
-        ).start()
+def increment_user_balance(address:str, amount:float, db_session:Session):
+    user = db_session.query(database.Users).filter(database.Users.public_key == address)
+    _user = user.first()
+    if user is None:
+        raise Exception(f'No user with address "{address}"')    
+    
 
-def send_token(transaction:database.Fundings):
-    try:
-        db_session = next(get_session())
-        en_private_key = db_session.query(database.Users).filter(database.Users.public_key == transaction.to_address).first()
-        if en_private_key is None:
-            print(f"{transaction.to_address} has no private key!")
-            raise Exception("")
-        _private_key = aes_decode_data(en_private_key.private_key)
-        _amount = en_private_key.balance
-        print(_private_key, "private key kdjfjkljfojjp[p[]]")
-        t = trc20.send_trc20(transaction.to_address, settings.central_wallet_address, _private_key, int(transaction.amount))
-    except Exception as e:
-        print(e)
-        db_session.rollback()
-        del db_session
-    else:
-        db_session.query(database.Fundings).filter(database.Fundings.id == transaction.id).update({"success": 1}, synchronize_session=False)
-        db_session.query(database.Users).filter(database.Users.public_key == transaction.to_address).update({"balance": _amount+transaction.amount}, synchronize_session=False)
-        db_session.commit()
-    db_session = None
+# def send_transactions2backend(transactions:list[database.Fundings]):
+#     for t in transactions:
+#         CustomThread(
+#             name=f'send_transactions2backend: id {t.id}',
+#             target= send_token,
+#             args= (t,)
+#         ).start()
+
+# def send_token(transaction:database.Fundings):
+#     try:
+#         db_session = next(get_session())
+#         user = db_session.query(database.Users).filter(database.Users.public_key == transaction.to_address).first()
+#         if user is None:
+#             print(f"{transaction.to_address} has no private key!")
+#             raise Exception("")
+#         _, _private_key = provider.get_HD_account(settings.xchangenextdoor_mnemonic, settings.xchangenextdoor_passphrase, user.id-1, user.address_index)
+#         _amount = user.balance
+#         print(_private_key, "private key kdjfjkljfojjp[p[]]")
+#         t = trc20.send_trc20(transaction.to_address, settings.central_wallet_address, _private_key, transaction.amount)
+#     except Exception as e:
+#         print(e)
+#         db_session.rollback()
+#         del db_session
+#     else:
+#         db_session.query(database.Fundings).filter(database.Fundings.id == transaction.id).update({"success": 1}, synchronize_session=False)
+#         db_session.query(database.Users).filter(database.Users.public_key == transaction.to_address).update({"balance": _amount+transaction.amount}, synchronize_session=False)
+#         db_session.commit()
+#     db_session = None

@@ -40,6 +40,7 @@ async def asyncget_trc20_balance(public_key:str):
 def create_trx_account():
     account = trx.create_account()
     return { "address" : account[0], "key": account[1]}
+
 @router.post("/create/hdtrx")
 def create_trx_HD_account(passphrase:str='', num_of_words:int=12):
     try:
@@ -65,11 +66,11 @@ def get_trx_HD_account(mnemonic:str="", passphrase:str='', account_number:int=0,
 #     return {"transaction hash": erc20.send_erc20(from_address, to_address, private_key, amount)}
 
 @router.post("/trx/send")
-def send_trx(from_address:str, to_address:str, private_key:str, amount:int):
+def send_trx(from_address:str, to_address:str, private_key:str, amount:float):
     return {"transaction hash": trx.send_trx(from_address, to_address, private_key, amount)}
 
 @router.post("/async/trx/send")
-async def asyncsend_trx(from_address:str, to_address:str, private_key:str, amount:int):
+async def asyncsend_trx(from_address:str, to_address:str, private_key:str, amount:float):
     return {"transaction hash": await asynctrx.send_trx(from_address, to_address, private_key, amount)}
 
 @router.post("/trc20/send")

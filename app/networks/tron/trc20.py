@@ -87,16 +87,13 @@ def search_block_chain(block_number:int, to_block:int, to_address:str|list = Non
             return ret
         block_number += 1
 
-def send_trc20(from_address:str, to_address:str, private_key:str, amount:int, fee_limit=40_000_000, verify_balance=False):
+def send_trc20(from_address:str, to_address:str, private_key:str, amount:float, fee_limit=120_000):
     amount *= (10**token_decimal)
     if not web3.is_address(to_address):
         raise BadAddress('invalid trc20 address!')
-    if verify_balance:
-        balance = get_acct_balance(from_address, False)
-        if balance < amount:
-            raise TransactionError("insufficient trc20 tokens!")
     private_key = PrivateKey(bytes.fromhex(private_key))
     tx = contract.functions.transfer(to_address, int(amount)).with_owner(from_address).fee_limit(fee_limit).build().sign(private_key)
-    return tx.broadcast().wait()
+    tx.broadcast()
+    return tx.wait()
     
 

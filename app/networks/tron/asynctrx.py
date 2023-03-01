@@ -79,17 +79,14 @@ async def search_block_chain(block_number:int, to_block:int, to_address:str|list
                 return ret
             block_number += 1
 
-async def send_trx(from_address:str, to_address:str, private_key:str, amount:int, memo="sending trx tokens using async", verify_balance=False):
+async def send_trx(from_address:str, to_address:str, private_key:str, amount:float, memo=""):
     async with tron_provider() as web3:
         amount *= (10**token_decimal)
         if not web3.is_address(to_address):
             raise BadAddress('invalid trx address!')
-        if verify_balance:
-            balance = await get_acct_balance(from_address, False)
-            if balance < amount:
-                raise TransactionError("insufficient trx!")
         private_key = PrivateKey(bytes.fromhex(private_key))
-        tx = await web3.trx.transfer(from_address, to_address, int(amount)).memo(memo).build().inspect().sign(private_key).broadcast()
+        tx = web3.trx.transfer(from_address, to_address, int(amount)).memo(memo).build().inspect().sign(private_key)
+        await tx.broadcast()
         return await tx.wait()
     
 
