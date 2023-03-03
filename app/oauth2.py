@@ -9,6 +9,7 @@ from .dbconnect import get_session
 from . import database, schemas
 
 oauth2_scheme_users = OAuth2PasswordBearer(tokenUrl="/api/v1/login/users", scheme_name='User Login')
+oauth2_scheme_vendors = OAuth2PasswordBearer(tokenUrl="/api/v1/login/vendors", scheme_name='Vendor Login')
 
 
 def aes_encode_data(data:str):
@@ -34,15 +35,19 @@ def verify_token(token:str):
     try:
         payload = jwt.decode(token, settings.jwt_secret_key, settings.jwt_algorithm)
         if payload['id'] is None:
-            return None
+            raise JWTError
         return payload
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Aunthenticate": "Bearer"})
 
 def get_user_from_token(token = Depends(oauth2_scheme_users), db_session:Session = Depends(get_session)):
     payload =  verify_token(token)
-    if payload is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Aunthenticate": "Bearer"})
     user = db_session.query(database.Users).filter(database.Users.id == payload['id']).first()
-    return schemas.UserComplete(id=user.id, email=user.email, password=user.password, public_key=user.public_key, address_index = user.address_index, balance=user.balance)
+    return schemas.UserComplete(id=user.id, email=user.email, password=user.password, public_key=user.public_key, balance=user.balance)
+
+
+def get_vendor_from_token(token = Depends(oauth2_scheme_vendors), db_session:Session = Depends(get_session)):
+    payload =  verify_token(token)
+    vendor = db_session.query(database.Vendors).filter(database.Vendors.id == payload['id']).first()
+    return schemas.Vendor(id=vendor.id, email=vendor.email, password=vendor.password, balance=vendor.balance)
 

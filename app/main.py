@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 # from .networks.etherium import ether, erc20
 import logging
-from .routers import tests, auth, users, backend
+from .routers import tests, auth, users, backend, vendors
 from .dbconnect import Base, engine
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(asctime)s - %(message)s')
@@ -23,6 +23,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(vendors.router)
 app.include_router(backend.router)
 app.include_router(tests.router)
 

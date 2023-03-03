@@ -86,7 +86,7 @@ async def send_trx(from_address:str, to_address:str, private_key:str, amount:flo
             raise BadAddress('invalid trx address!')
         private_key = PrivateKey(bytes.fromhex(private_key))
         tx = web3.trx.transfer(from_address, to_address, int(amount)).memo(memo).build().inspect().sign(private_key)
-        await tx.broadcast()
+        tx = await tx.broadcast()
         return await tx.wait()
     
 

@@ -96,7 +96,7 @@ async def search_block_chain(block_number:int, to_block:int, to_address:str|list
                 return ret
             block_number += 1
 
-async def send_trc20(from_address:str, to_address:str, private_key:str, amount:float, fee_limit=100_000):
+async def send_trc20(from_address:str, to_address:str, private_key:str, amount:float, fee_limit=30_000_000): # fee limit in Sun
     async with tron_provider() as web3:
         contract = await web3.get_contract(address)
         token_decimal = await contract.functions.decimals()
@@ -104,8 +104,8 @@ async def send_trc20(from_address:str, to_address:str, private_key:str, amount:f
         if not web3.is_address(to_address):
             raise BadAddress('invalid trc20 address!')
         private_key = PrivateKey(bytes.fromhex(private_key))
-        tx = await contract.functions.transfer(to_address, int(amount)).with_owner(from_address).fee_limit(fee_limit).build().sign(private_key)
-        tx.broadcast()
+        tx = contract.functions.transfer(to_address, int(amount)).with_owner(from_address).fee_limit(fee_limit).build().sign(private_key)
+        tx = await tx.broadcast()
         return await tx.wait()
     
 

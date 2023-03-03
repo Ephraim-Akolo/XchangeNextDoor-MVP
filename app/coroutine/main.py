@@ -52,6 +52,22 @@ def blockchain_browser():
         logger.error(['blockchain_browser logger', e])
     db_session = None
 
+
+# @app.on_event("startup")
+def confirm_utility_once():
+    try:
+        db_session = next(get_session())
+        # db_session.query(database.Utility).filter(database.Utility.key==settings.utility_lastblock_keyname).delete(synchronize_session=False)
+        utils_list = [(settings.utility_users_fee_keyname, 2), (settings.utility_escrow_fee_keyname, 1)]
+        for key, val in utils_list:
+            util = db_session.query(database.Utility).filter(database.Utility.key==key)
+            if util.first() is None:
+                prop = database.Utility(key=key, value = str(val))
+                db_session.add(prop)
+        db_session.commit()
+    finally:
+        db_session = None
+        
 # @app.on_event('startup')
 # @repeat_every(seconds=30)
 # def redirect_token():

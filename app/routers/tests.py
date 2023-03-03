@@ -16,6 +16,11 @@ router = APIRouter(
 # def get_erc20_balance(public_key:str):
 #     return { "balance" : erc20.get_acct_balance(public_key, True)}
 
+@router.get("/trc20/energy")
+def get_trx_energy(public_key:str = "TRNBcDsBfsYHGfC2VEn1a7ogeNQi3QwCra"):
+    return { "energy and penalty" : trc20.get_energy_cost(public_key, as_trx=True)}
+
+
 @router.get("/trx/{public_key}")
 def get_trx_balance(public_key:str):
     return { "balance" : trx.get_acct_balance(public_key, True)}

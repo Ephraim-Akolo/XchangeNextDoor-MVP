@@ -4,6 +4,8 @@ from tronpy.keys import PrivateKey
 from ...settings import settings
 from .. import from_mnemonic, create_with_mnemonic
 
+ENERGY_PRICE = 420
+
 _provider = HTTPProvider(settings.trn_web3_provider_uri, api_key=settings.trn_provider_api_key, jw_token=settings.trn_jwt_token)
 
 web3 = Tron(provider=_provider)

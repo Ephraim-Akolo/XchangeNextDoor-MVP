@@ -5,11 +5,11 @@ from datetime import datetime
 from .. import database
 from ..networks.tron import trc20
 from ..dbconnect import get_session
-# from ..settings import settings
+from ..settings import settings
 # from ..oauth2 import aes_decode_data
 # from ..networks.tron import provider# from ..settings import settings
 # from ..oauth2 import aes_decode_data
-# from ..networks.tron import provider
+from ..networks.tron import provider
 
 
 class CustomThread(Thread):
@@ -61,6 +61,8 @@ def process_a_block(blck_num, addresses, db_session:Session):
         print("RETRYING...................")
         transactions = trc20.search_block_chain(blck_num, blck_num, to_address=addresses, as_trc20=True)
     for trans in transactions:
+        if trans['ret'].lower() == "success":
+            db_session.query(database.Users).filter(database.Users.public_key == trans['to_address']).update({"balance": database.Users.balance+trans['amount']}, synchronize_session=False)
         db_session.add(database.Fundings(
             from_address=trans['owner_address'],
             to_address = trans['to_address'],
@@ -69,13 +71,6 @@ def process_a_block(blck_num, addresses, db_session:Session):
             status = trans['ret'],
             timestamp = datetime.fromtimestamp(trans['timestamp']/1000.0)
             ))
-
-def increment_user_balance(address:str, amount:float, db_session:Session):
-    user = db_session.query(database.Users).filter(database.Users.public_key == address)
-    _user = user.first()
-    if user is None:
-        raise Exception(f'No user with address "{address}"')    
-    
 
 # def send_transactions2backend(transactions:list[database.Fundings]):
 #     for t in transactions:

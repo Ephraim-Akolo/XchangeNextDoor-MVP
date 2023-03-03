@@ -15,12 +15,15 @@ class Settings(BaseSettings):
     xchangenextdoor_mnemonic:str
     xchangenextdoor_passphrase:str
     utility_lastblock_keyname:str = "last_block_number"
+    utility_users_fee_keyname:str = "users_fee"
+    utility_escrow_fee_keyname:str = "escrow_fee"
     access_token_expire_minutes:int = 60
     jwt_algorithm:str = 'HS256'
     jwt_secret_key: str = 'd329748e4dce05b3fcf429da2bb8914f240ff0c288897f455ae792f82aee3cc0'
     aes_secret_key:str
     central_wallet_address:str
     central_wallet_key:str
+    users_hd_account_val:int = 0
     class Config:
         env_file = "./.env"
 

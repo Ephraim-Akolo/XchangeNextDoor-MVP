@@ -1,4 +1,4 @@
-from .provider import web3, create_account
+from .provider import web3, create_account, ENERGY_PRICE
 from ...settings import settings
 from tronpy.keys import PrivateKey
 from tronpy.exceptions import TransactionError, BadAddress, BlockNotFound, AddressNotFound
@@ -8,6 +8,20 @@ address = settings.trc20_contract_address
 contract = web3.get_contract(address)
 token_decimal = contract.functions.decimals()
 
+def get_energy_cost(owner_address="TRNBcDsBfsYHGfC2VEn1a7ogeNQi3QwCra", contract_address=settings.trc20_contract_address, as_trx=False):
+    ret = web3.trigger_constant_contract(
+            owner_address=owner_address,
+            contract_address=contract_address,
+            function_selector="transferFrom(address,address,uint256)",
+            parameter= trx_abi.encode_abi(['address', 'uint256'], [owner_address, 1]).hex()
+        )
+    if as_trx:
+        total = (ret.get("energy_used")*ENERGY_PRICE)/10**6
+        penalty = (ret.get("energy_penalty")*ENERGY_PRICE)/10**6
+    else:
+        total = ret.get("energy_used")
+        penalty = ret.get("energy_penalty")
+    return {"total cost": total, "contract cost": total-penalty, "traffic cost": penalty} 
 
 def get_total_supply():
     return contract.functions.totalSupply()/(10**token_decimal)
@@ -59,7 +73,7 @@ def search_block_chain(block_number:int, to_block:int, to_address:str|list = Non
                     trans['raw_data']['contract'][0]['parameter']['value']['contract_address'] == contract_address):
                 continue
             _from_address = web3.to_base58check_address(trans['raw_data']['contract'][0]['parameter']['value']['owner_address'])
-            _to_address, _amount = trx_abi.decode(['address', 'uint256'], bytes.fromhex(trans['raw_data']['contract'][0]['parameter']['value']['data'][8:]))
+            _to_address, _amount = trx_abi.decode_abi(['address', 'uint256'], bytes.fromhex(trans['raw_data']['contract'][0]['parameter']['value']['data'][8:]))
             if strict:
                 if _to_address not in to_address or _from_address not in from_address:
                     continue
@@ -87,13 +101,13 @@ def search_block_chain(block_number:int, to_block:int, to_address:str|list = Non
             return ret
         block_number += 1
 
-def send_trc20(from_address:str, to_address:str, private_key:str, amount:float, fee_limit=120_000):
+def send_trc20(from_address:str, to_address:str, private_key:str, amount:float, fee_limit=30_000_000): # fee limit in Sun
     amount *= (10**token_decimal)
     if not web3.is_address(to_address):
         raise BadAddress('invalid trc20 address!')
     private_key = PrivateKey(bytes.fromhex(private_key))
     tx = contract.functions.transfer(to_address, int(amount)).with_owner(from_address).fee_limit(fee_limit).build().sign(private_key)
-    tx.broadcast()
+    tx = tx.broadcast()
     return tx.wait()
     
 
