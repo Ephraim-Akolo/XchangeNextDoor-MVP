@@ -28,6 +28,8 @@ def signup_users(users:schemas.UserSignup, db_session:Session = Depends(get_sess
     db_session.refresh(new_user)
     _pub_key, _ = provider.get_HD_account(settings.xchangenextdoor_mnemonic, settings.xchangenextdoor_passphrase, settings.users_hd_account_val, new_user.id)
     db_session.query(database.Users).filter(database.Users.id == new_user.id).update({"public_key": _pub_key}, synchronize_session=False)
+    new_blockchain_wallet = database.BlockChainBalances(address= _pub_key)
+    db_session.add(new_blockchain_wallet)
     db_session.commit()
     # activate account ######## work on the flow more properly later
     central_wallet_address, central_wallet_key = provider.get_HD_account(settings.xchangenextdoor_mnemonic, settings.xchangenextdoor_passphrase, settings.users_hd_account_val, 0)

@@ -29,7 +29,7 @@ class Vendors(Base):
     created = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
 
 
-class VendorsTransfers(Base):
+class VendorsTransfers(Base): # should have transaction id to be able to cluster batch transactions.
     __tablename__ = 'vendors_transfers'
     id = Column(Integer, primary_key=True, nullable=False)
     from_address = Column(String(LONG_STR), nullable= False, unique=False)
@@ -84,8 +84,14 @@ class EscrowChats(Base):
     created = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
 
 
+class BlockChainBalances(Base):#merge the BlockChainBalances with the users table by just providing a new column that will keep track of real wallet balance
+    __tablename__ = "wallet_balances"
+    address = Column(String(LONG_STR), primary_key=True)
+    balance = Column(Float, nullable=False, server_default='0.')
+    
+
 class Utility(Base): # make key primary and remove id
     __tablename__ = "utility"
     id = Column(Integer, primary_key=True, nullable=False)
     key = Column(String(LONG_STR), nullable= False, unique=True)
-    value = Column(String(LONGER_STR), nullable= False, unique=True)
+    value = Column(String(LONGER_STR), nullable= False)

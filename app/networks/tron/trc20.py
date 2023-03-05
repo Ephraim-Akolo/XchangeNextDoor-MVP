@@ -1,4 +1,4 @@
-from .provider import web3, create_account, ENERGY_PRICE
+from .provider import web3, create_account
 from ...settings import settings
 from tronpy.keys import PrivateKey
 from tronpy.exceptions import TransactionError, BadAddress, BlockNotFound, AddressNotFound
@@ -7,21 +7,7 @@ from tronpy.abi import trx_abi
 address = settings.trc20_contract_address
 contract = web3.get_contract(address)
 token_decimal = contract.functions.decimals()
-
-def get_energy_cost(owner_address="TRNBcDsBfsYHGfC2VEn1a7ogeNQi3QwCra", contract_address=settings.trc20_contract_address, as_trx=False):
-    ret = web3.trigger_constant_contract(
-            owner_address=owner_address,
-            contract_address=contract_address,
-            function_selector="transferFrom(address,address,uint256)",
-            parameter= trx_abi.encode_abi(['address', 'uint256'], [owner_address, 1]).hex()
-        )
-    if as_trx:
-        total = (ret.get("energy_used")*ENERGY_PRICE)/10**6
-        penalty = (ret.get("energy_penalty")*ENERGY_PRICE)/10**6
-    else:
-        total = ret.get("energy_used")
-        penalty = ret.get("energy_penalty")
-    return {"total cost": total, "contract cost": total-penalty, "traffic cost": penalty} 
+ 
 
 def get_total_supply():
     return contract.functions.totalSupply()/(10**token_decimal)

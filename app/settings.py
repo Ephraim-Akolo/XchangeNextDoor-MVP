@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     utility_lastblock_keyname:str = "last_block_number"
     utility_users_fee_keyname:str = "users_fee"
     utility_escrow_fee_keyname:str = "escrow_fee"
+    utility_vendor_tf_keyname:str = "vendor_withdrawal_fee"
     access_token_expire_minutes:int = 60
     jwt_algorithm:str = 'HS256'
     jwt_secret_key: str = 'd329748e4dce05b3fcf429da2bb8914f240ff0c288897f455ae792f82aee3cc0'

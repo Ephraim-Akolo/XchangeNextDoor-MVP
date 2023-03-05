@@ -63,6 +63,7 @@ def process_a_block(blck_num, addresses, db_session:Session):
     for trans in transactions:
         if trans['ret'].lower() == "success":
             db_session.query(database.Users).filter(database.Users.public_key == trans['to_address']).update({"balance": database.Users.balance+trans['amount']}, synchronize_session=False)
+            db_session.query(database.BlockChainBalances).filter(database.BlockChainBalances.address == trans['to_address']).update({"balance": database.BlockChainBalances.balance+trans['amount']}, synchronize_session=False)
         db_session.add(database.Fundings(
             from_address=trans['owner_address'],
             to_address = trans['to_address'],

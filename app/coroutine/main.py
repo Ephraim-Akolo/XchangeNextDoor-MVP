@@ -53,12 +53,14 @@ def blockchain_browser():
     db_session = None
 
 
-# @app.on_event("startup")
+@app.on_event("startup")
 def confirm_utility_once():
     try:
         db_session = next(get_session())
         # db_session.query(database.Utility).filter(database.Utility.key==settings.utility_lastblock_keyname).delete(synchronize_session=False)
-        utils_list = [(settings.utility_users_fee_keyname, 2), (settings.utility_escrow_fee_keyname, 1)]
+        utils_list = [(settings.utility_users_fee_keyname, 2), 
+                      (settings.utility_vendor_tf_keyname, 1),
+                      (settings.utility_escrow_fee_keyname, 1)]
         for key, val in utils_list:
             util = db_session.query(database.Utility).filter(database.Utility.key==key)
             if util.first() is None:

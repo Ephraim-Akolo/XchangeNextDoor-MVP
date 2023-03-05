@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 # from ..networks.etherium import ether, erc20
-from ..networks.tron import trx, trc20, asynctrx, asynctrc20
+from ..networks.tron import trx, trc20, asynctrx, asynctrc20, provider
 from ..schemas import Browser
 
 router = APIRouter(
@@ -18,8 +18,11 @@ router = APIRouter(
 
 @router.get("/trc20/energy")
 def get_trx_energy(public_key:str = "TRNBcDsBfsYHGfC2VEn1a7ogeNQi3QwCra"):
-    return { "energy and penalty" : trc20.get_energy_cost(public_key, as_trx=True)}
+    return { "energy and penalty" : provider.get_energy_cost(public_key, as_trx=True)}
 
+@router.get("/async/trc20/energy")
+async def async_get_trx_energy(public_key:str = "TRNBcDsBfsYHGfC2VEn1a7ogeNQi3QwCra"):
+    return { "energy and penalty" : await provider.async_get_energy_cost(public_key, as_trx=True)}
 
 @router.get("/trx/{public_key}")
 def get_trx_balance(public_key:str):
