@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-@app.on_event('startup')
-@repeat_every(seconds= 15)
+# @app.on_event('startup')
+# @repeat_every(seconds= 15)
 def blockchain_browser():
     try:
         db_session = next(get_session())
@@ -60,7 +60,8 @@ def confirm_utility_once():
         # db_session.query(database.Utility).filter(database.Utility.key==settings.utility_lastblock_keyname).delete(synchronize_session=False)
         utils_list = [(settings.utility_users_fee_keyname, 2), 
                       (settings.utility_vendor_tf_keyname, 1),
-                      (settings.utility_escrow_fee_keyname, 1)]
+                      (settings.utility_escrow_vendor_fee, 1),
+                      (settings.utility_escrow_user_fee, 1)]
         for key, val in utils_list:
             util = db_session.query(database.Utility).filter(database.Utility.key==key)
             if util.first() is None:

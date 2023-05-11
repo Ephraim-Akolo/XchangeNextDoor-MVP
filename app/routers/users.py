@@ -100,26 +100,29 @@ def get_active_escrows(db_session:Session = Depends(get_session), token_user:sch
 
 @router.post("/escrow/sell", status_code=201)
 def sell_trc20_token(transfer:schemas.SellToken, db_session:Session = Depends(get_session), token_user:schemas.UserComplete = Depends(get_user_from_token)):
-    fee:database.Utility = db_session.query(database.Utility).filter(database.Utility.key == settings.utility_escrow_fee_keyname).first()
+    fee:database.Utility = db_session.query(database.Utility).filter(database.Utility.key == settings.utility_escrow_user_fee).first()
+    vendor_fee:database.Utility = db_session.query(database.Utility).filter(database.Utility.key == settings.utility_escrow_vendor_fee).first()
     fee = float(fee.value)
+    vendor_fee = float(vendor_fee.value)
     transfer.amount =  abs(transfer.amount)
     if transfer.amount + fee > token_user.balance:
         raise HTTPException(status_code=status.HTTP_412_PRECONDITION_FAILED, detail="INSUFFICIENT BALANCE!")
-    else:
-        db_session.query(database.Users).filter(database.Users.id == token_user.id).update({'balance': database.Users.balance-(transfer.amount+fee)},synchronize_session=False)
-        vendor:database.Vendors = db_session.query(database.Vendors).filter(database.Vendors.email == transfer.email.lower()).first()
-        if vendor is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"no vendor with email {transfer.email}")
-        trans = database.Escrow(
-            user_id = token_user.id,
-            vendor_id = vendor.id,
-            amount = transfer.amount,
-            fee= fee,
-            )
-        db_session.add(trans)
-        db_session.commit()
-        db_session.refresh(trans)
-        return trans
+    if vendor_fee+1 > transfer.amount:
+        raise HTTPException(status_code=status.HTTP_412_PRECONDITION_FAILED, detail=f"MINIMUM TRANSFER IS {vendor_fee + 1} USDT!")
+    db_session.query(database.Users).filter(database.Users.id == token_user.id).update({'balance': database.Users.balance-(transfer.amount+fee)},synchronize_session=False)
+    vendor:database.Vendors = db_session.query(database.Vendors).filter(database.Vendors.email == transfer.email.lower()).first()
+    if vendor is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"no vendor with email {transfer.email}")
+    trans = database.Escrow(
+        user_id = token_user.id,
+        vendor_id = vendor.id,
+        amount = transfer.amount,
+        fee= fee,
+        )
+    db_session.add(trans)
+    db_session.commit()
+    db_session.refresh(trans)
+    return trans
 
 @router.post("/escrow/chat", status_code=201, response_model=list[schemas.EscrowChatsReturned])
 def chat_with_vendor(escrow_id:int, limit:int=5, message:str='', db_session:Session = Depends(get_session), token_user:schemas.UserComplete = Depends(get_user_from_token)):
@@ -140,11 +143,13 @@ def chat_with_vendor(escrow_id:int, limit:int=5, message:str='', db_session:Sess
 @router.put("/escrow/verify")
 def verify_escrow_transaction(escrow_id:int, db_session:Session = Depends(get_session), token_user:schemas.UserComplete = Depends(get_user_from_token)):
     escrow = db_session.query(database.Escrow).filter(database.Escrow.id == escrow_id).filter(database.Escrow.user_id==token_user.id)
+    fee:database.Utility = db_session.query(database.Utility).filter(database.Utility.key == settings.utility_escrow_vendor_fee).first()
+    fee = float(fee.value)
     trans:database.Escrow = escrow.first()
     if trans is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not Authorized!")
     escrow.update({'completed': True}, synchronize_session=False)
-    db_session.query(database.Vendors).filter(database.Vendors.id == trans.vendor_id).update({"balance": database.Vendors.balance+trans.amount}, synchronize_session=False)
+    db_session.query(database.Vendors).filter(database.Vendors.id == trans.vendor_id).update({"balance": database.Vendors.balance+(trans.amount-fee)}, synchronize_session=False)
     db_session.commit()
     db_session.refresh(trans)
     return trans
